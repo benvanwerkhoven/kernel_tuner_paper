@@ -13,6 +13,14 @@ import matplotlib
 
 from experiment import strategy_options, algorithms
 
+plots = {}
+plots["minimize"] = ["minimize"]
+plots["basinhopping"] = ["basinhopping"]
+plots["diff_evo"] = ["diff_evo"]
+plots["other"] = ["genetic_algorithm", "pso", "firefly_algorithm", "simulated_annealing"]
+
+
+
 
 
 def make_plots(algorithm):
@@ -20,9 +28,14 @@ def make_plots(algorithm):
 
     method_names = []
 
-
-    abbreviate_methods = {"minimize": "M-", "basinhopping": "BS-", "diff_evo": "DE-"}
-
+    abbreviate_methods = {}
+    abbreviate_methods["minimize"] = "M-"
+    abbreviate_methods["basinhopping"] = "BS-"
+    abbreviate_methods["diff_evo"] = "DE-"
+    abbreviate_methods["genetic_algorithm"] = "GA"
+    abbreviate_methods["firefly_algorithm"] = "FA"
+    abbreviate_methods["pso"] = "PSO"
+    abbreviate_methods["simulated_annealing"] = "SA"
 
     with open(algorithm + "/" + algorithm + "_brute_force.json", 'r') as fp:
         data = json.load(fp)
@@ -33,50 +46,60 @@ def make_plots(algorithm):
     print('maxp', maxp)
 
 
-    for strat in [s for s in strategy_options if not s == "brute_force"]:
+    for this_plot,strats in plots.items():
+
+    #for strat in [s for s in strategy_options if not s == "brute_force"]:
 
         collect_data = []
         method_names = []
 
-        for method in strategy_options[strat]:
+        for strat in strats:
 
-            if not os.path.isfile(algorithm + "/" + algorithm + "_" + strat + "_" + method + "_" + str(0) + ".json"):
-                continue
+            for method in strategy_options[strat]:
 
-            data_per_method = []
+                filename = algorithm + "/" + algorithm + "_" + strat + "_"
+                if method:
+                    filename += method + "_"
 
-            for i in range(7):
-
-                if not os.path.isfile(algorithm + "/" + algorithm + "_" + strat + "_" + method + "_" + str(i) + ".json"):
+                if not os.path.isfile(filename + str(0) + ".json"):
                     continue
 
+                data_per_method = []
 
-                with open(algorithm + "/" + algorithm + "_" + strat + "_" + method + "_" + str(i) + ".json", 'r') as fp:
-                    data = json.load(fp)
-                    configs = [algorithms[algorithm]['total_ops'] / (d['time']/1e3) for d in data]
+                for i in range(32):
 
-                data_per_method += configs
+                    if not os.path.isfile(filename + str(i) + ".json"):
+                        continue
 
-            collect_data.append(data_per_method)
-            if strat in abbreviate_methods:
-                #method_names += [abbreviate_methods[strat] + method]
-                method_names += [method]
-            else:
-                method_names += [strat]
+                    with open(filename + str(i) + ".json", 'r') as fp:
+                        data = json.load(fp)
+                        configs = [algorithms[algorithm]['total_ops'] / (d['time']/1e3) for d in data]
+
+                    data_per_method += configs
+
+                collect_data.append(data_per_method)
+                if strat in abbreviate_methods:
+                    #method_names += [abbreviate_methods[strat] + method]
+                    if method:
+                        method_names += [method]
+                    else:
+                        method_names += [abbreviate_methods[strat]]
+                else:
+                    method_names += [strat]
 
         #also append brute_force for comparison
         collect_data.append(bf_configs)
         method_names += ["brute_force"]
 
         if len(collect_data) > 1:
-            plot(algorithm, collect_data, method_names, strat, maxp)
+            plot(algorithm, collect_data, method_names, this_plot, maxp)
 
 
 
 def plot(algorithm, collect_data, method_names, strat, maxp):
 
-    sns.set(style="whitegrid", font_scale=1.5)
-    fancy_name = {"minimize": "Minimize", "basinhopping": "Basin Hopping", "diff_evo": "Differential Evolution"}
+    sns.set(style="whitegrid", font_scale=1.45)
+    fancy_name = {"minimize": "Minimize", "basinhopping": "Basin Hopping", "diff_evo": "Differential Evolution", "genetic_algorithm": "Genetic Algorithm", "other": "Global Optimization methods"}
 
     # Set up the matplotlib figure
     f, ax = plt.subplots(figsize=(11, 6))
@@ -104,7 +127,7 @@ def plot(algorithm, collect_data, method_names, strat, maxp):
 
     f.savefig(filename + ".pdf", format='pdf')
     f.savefig(filename + ".png", dpi=600, format='png')
-    plt.show()
+    #plt.show()
 
 
 

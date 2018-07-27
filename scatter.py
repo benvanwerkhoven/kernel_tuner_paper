@@ -3,6 +3,7 @@
 import os
 import json
 import sys
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -15,9 +16,20 @@ from matplotlib.lines import Line2D
 from experiment import strategy_options, algorithms
 
 
+abbreviate_methods = OrderedDict()
+abbreviate_methods["brute_force"] = "bf"
+abbreviate_methods["minimize"] = "M-"
+abbreviate_methods["basinhopping"] = "BS-"
+abbreviate_methods["diff_evo"] = "DE-"
+abbreviate_methods["genetic"] = "GA"
+abbreviate_methods["firefly"] = "FA"
+abbreviate_methods["pso"] = "PSO"
+abbreviate_methods["annealing"] = "SA"
+
+
 brute_force_data = {}
-brute_force_data['convolution'] = dict(block_size_x=128, block_size_y=2, tile_size_x=1, tile_size_y=4, read_only=1, time=2.55226883888, perf=3799.45509668, execution_time=3629.2007822990417)
-brute_force_data['pnpoly'] = dict(block_size_x=896, tile_size=20, between_method=0, use_precomputed_slopes=1, use_method=2, time=26.7275260925, perf=748292226.178, execution_time=14093.25716304779)
+#brute_force_data['convolution'] = dict(block_size_x=128, block_size_y=2, tile_size_x=1, tile_size_y=4, read_only=1, time=2.55226883888, perf=3799.45509668, execution_time=3629.2007822990417)
+#brute_force_data['pnpoly'] = dict(block_size_x=896, tile_size=20, between_method=0, use_precomputed_slopes=1, use_method=2, time=26.7275260925, perf=748292226.178, execution_time=14093.25716304779)
 
 def append_flat(the_list, whatever):
     if hasattr(whatever, '__iter__'):
@@ -28,9 +40,6 @@ def append_flat(the_list, whatever):
 
 
 def make_plots(algorithm):
-
-
-    abbreviate_methods = {"minimize": "M-", "basinhopping": "BS-", "diff_evo": "DE-"}
 
     summary = {}
     all_points = {}
@@ -66,9 +75,15 @@ def make_plots(algorithm):
 
     #read the data
     for k,v in data.items():
-        strat = "_".join(k.split("_")[:-1])
-        method = "".join(k.split("_")[-1])
+        if "_" in k:
+            strat = "_".join(k.split("_")[:-1])
+            method = "".join(k.split("_")[-1])
+        else:
+            strat = k
+            method = ""
 
+        if strat == "simulated":
+            strat = "annealing"
         shortname = abbreviate_methods[strat] + method
 
         print(shortname)
@@ -76,6 +91,7 @@ def make_plots(algorithm):
         summary[shortname] = {}
         all_points[shortname] = {}
         #plot only average
+        print(v['execution_time'])
         summary[shortname]['execution_time'] = np.average(v['execution_time'])
         summary[shortname]['execution_time_err'] = np.std(v['execution_time'])
         #plot all measurements
@@ -124,7 +140,15 @@ def plot(algorithm, summary, all_points, method_names, maxp):
     #yerr = [v['execution_time_err'] for v in summary.values()]
     #xerr = [v['best_perf_err'] for v in summary.values()]
 
-    color_names = {'b': '#4C72B0', 'B': '#C44E52', 'M': '#CCB974', 'D': '#55A868'}
+    color_names = OrderedDict()
+    color_names['b'] = '#949494'
+    color_names['M'] = '#ECE133'
+    color_names['B'] = '#D55E00'
+    color_names['D'] = '#029E73'
+    color_names['G'] = '#0173B2'
+    color_names['F'] = '#56B4E9'
+    color_names['P'] = '#F14CC1'
+    color_names['S'] = '#FBAFE4'
 
     all_x = []
     all_y = []
@@ -154,16 +178,13 @@ def plot(algorithm, summary, all_points, method_names, maxp):
 
     #plt.errorbar(x, y, xerr=xerr, fmt='o')
     #plt.errorbar(x, y, xerr=xerr, fmt='o')
-    plt.scatter(all_x, all_y, alpha=0.2, c=all_colors, linewidths=0.0, s=100.0)
-    plt.scatter(x, y, alpha=1.0, c=colors, linewidths=0.0, s=100.0)
+    plt.scatter(all_x, all_y, alpha=0.05, c=all_colors, linewidths=0.0, s=100.0)
+    plt.scatter(x, y, alpha=1.0, c=colors, linewidths=0.2, s=100.0)
 
 
     #build legend
-    line1 = Line2D(range(1), range(1), color="white", marker='o', markersize=10.0, markeredgewidth=0.0, markerfacecolor='#4C72B0')
-    line2 = Line2D(range(1), range(1), color="white", marker='o', markersize=10.0, markeredgewidth=0.0, markerfacecolor='#C44E52')
-    line3 = Line2D(range(1), range(1), color="white", marker='o', markersize=10.0, markeredgewidth=0.0, markerfacecolor='#CCB974')
-    line4 = Line2D(range(1), range(1), color="white", marker='o', markersize=10.0, markeredgewidth=0.0, markerfacecolor='#55A868')
-    plt.legend((line1,line2,line3,line4),('brute_force', 'basinhopping', 'minimize', 'diff_evo'),numpoints=1, loc=2, framealpha=0.5)
+    lines = [Line2D(range(1), range(1), color="white", marker='o', markersize=10.0, markeredgewidth=0.2, markerfacecolor=c) for c in color_names.values()]
+    plt.legend(lines,list(abbreviate_methods.keys()),numpoints=1, loc=2, framealpha=0.5)
 
 
     f.suptitle('Auto-tuning ' + algorithms[algorithm]['fancy_name'] + ' on ' + algorithms[algorithm]['device'])
