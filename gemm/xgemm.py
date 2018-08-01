@@ -91,7 +91,7 @@ def tune(do_strategy, do_method):
     results, env = kernel_tuner.tune_kernel("Xgemm", kernel_string, problem_size, args, tune_params, block_size_names=block_size_names,
                              lang="OpenCL", restrictions=restrict, verbose=True, compiler_options=["-I"+path],
                              grid_div_x=grid_div_x, grid_div_y=grid_div_y, answer=answer, atol=1e-2,
-                             strategy=do_strategy, method=do_method, device=0, platform=1)
+                             strategy=do_strategy, method=do_method, device=0, platform=0)
 
     return results, env
 

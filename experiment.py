@@ -70,7 +70,7 @@ algorithms["convolution_streams"]  = {"method": tune_convolution_streams,
 algorithms["gemm_amd"]     = {"method": tune_gemm_amd,
                               "total_ops": (2.0 * (2048**3) + 2.0 * 2048 * 2048)/1e9,
                               "unit": "GFLOP/s",
-                              "device": "AMD RX 480",
+                              "device": "AMD Vega",
                               "fancy_name": "GEMM"}
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import json
 
 import matplotlib
@@ -20,6 +21,11 @@ def plot(algorithm):
     print('maxp', maxp)
     print('minp', minp)
 
+    print('size', len(bf_configs))
+    top = sorted(bf_configs)[-30:]
+    print('top30', top)
+
+
 
     f, ax = plt.subplots(figsize=(13, 6))
 
@@ -34,7 +40,7 @@ def plot(algorithm):
     plt.tick_params(axis="both", which="both", bottom="off", top="off",
                 labelbottom="on", left="off", right="off", labelleft="on")
 
-    plt.xlabel("Performance in GFLOP/s")
+    plt.xlabel("Performance in " + algorithms[algorithm]['unit'])
 
 
     plt.hist(bf_configs, bins=100, normed=True, color="#8BAFC8", linewidth=0, edgecolor="#757575")
@@ -63,4 +69,5 @@ def plot(algorithm):
 
 
 if __name__ == "__main__":
-    plot("gemm_amd")
+    if sys.argv[1] in algorithms:
+        plot(sys.argv[1])

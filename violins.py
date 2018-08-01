@@ -13,9 +13,11 @@ import matplotlib
 
 from experiment import strategy_options, algorithms
 
-plots = {}
-plots["minimize"] = ["minimize"]
+from collections import OrderedDict
+
+plots = OrderedDict()
 plots["basinhopping"] = ["basinhopping"]
+plots["minimize"] = ["minimize"]
 plots["diff_evo"] = ["diff_evo"]
 plots["other"] = ["genetic_algorithm", "pso", "firefly_algorithm", "simulated_annealing"]
 
@@ -72,7 +74,13 @@ def make_plots(algorithm):
                         continue
 
                     with open(filename + str(i) + ".json", 'r') as fp:
-                        data = json.load(fp)
+                        try:
+                            data = json.load(fp)
+                        except:
+                            print("Error reading filename", filename + str(i) + ".json")
+                            import traceback
+                            traceback.print_exc()
+                            exit()
                         configs = [algorithms[algorithm]['total_ops'] / (d['time']/1e3) for d in data]
 
                     data_per_method += configs

@@ -154,9 +154,9 @@ def plot(algorithm, summary, all_points, method_names, maxp):
     all_y = []
     all_colors = []
     for k,v in all_points.items():
-        append_flat(all_y, v['execution_time'])
-        append_flat(all_x, v['best_perf'])
-        all_colors += [color_names[k[0]] for _ in v['best_perf']]
+        append_flat(all_y, v['execution_time'][:32])
+        append_flat(all_x, v['best_perf'][:32])
+        all_colors += [color_names[k[0]] for _ in v['best_perf'][:32]]
 
     y = []
     x = []
@@ -215,7 +215,7 @@ def plot(algorithm, summary, all_points, method_names, maxp):
     filename = (algorithm + "-" + 'summary').replace("_", "-")
     f.savefig(filename + ".pdf", format='pdf')
     f.savefig(filename + ".png", dpi=600, format='png')
-    plt.show()
+    #plt.show()
 
 
 
